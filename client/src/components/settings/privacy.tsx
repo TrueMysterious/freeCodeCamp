@@ -1,17 +1,16 @@
-import { Button, Form } from '@freecodecamp/react-bootstrap';
 import React, { useState } from 'react';
 import { useTranslation, withTranslation } from 'react-i18next';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import type { Dispatch } from 'redux';
 import { createSelector } from 'reselect';
+import { Button, Spacer } from '@freecodecamp/ui';
 
 import { userSelector } from '../../redux/selectors';
 import type { ProfileUI } from '../../redux/prop-types';
 import { submitProfileUI } from '../../redux/settings/actions';
 
 import FullWidthRow from '../helpers/full-width-row';
-import Spacer from '../helpers/spacer';
 import SectionHeader from './section-header';
 import ToggleRadioSetting from './toggle-radio-setting';
 
@@ -56,7 +55,7 @@ function PrivacySettings({ submitProfileUI, user }: PrivacyProps): JSX.Element {
       <SectionHeader>{t('settings.headings.privacy')}</SectionHeader>
       <FullWidthRow>
         <p>{t('settings.privacy')}</p>
-        <Form inline={true} onSubmit={submitNewProfileSettings}>
+        <form onSubmit={submitNewProfileSettings}>
           <div role='group' aria-label={t('settings.headings.privacy')}>
             <ToggleRadioSetting
               action={t('settings.labels.my-profile')}
@@ -145,25 +144,24 @@ function PrivacySettings({ submitProfileUI, user }: PrivacyProps): JSX.Element {
           </div>
           <Button
             type='submit'
-            bsSize='lg'
-            bsStyle='primary'
-            data-cy='save-privacy-settings'
+            size='large'
+            variant='primary'
             block={true}
-            aria-disabled={!madeChanges}
+            disabled={!madeChanges}
             {...(!madeChanges && { tabIndex: -1 })}
           >
             {t('buttons.save')}{' '}
             <span className='sr-only'>{t('settings.headings.privacy')}</span>
           </Button>
-        </Form>
+        </form>
       </FullWidthRow>
       <FullWidthRow>
-        <Spacer size='medium' />
+        <Spacer size='m' />
         <p>{t('settings.data')}</p>
         <Button
           block={true}
-          bsSize='lg'
-          bsStyle='primary'
+          size='large'
+          variant='primary'
           download={`${user.username}.json`}
           href={`data:text/json;charset=utf-8,${encodeURIComponent(
             JSON.stringify(user)

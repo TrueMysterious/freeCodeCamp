@@ -1,7 +1,6 @@
 const path = require('path');
-const { dasherize } = require('../../../utils/slugs');
-const { sortChallengeFiles } = require('../../../utils/sort-challengefiles');
-const { challengeTypes, viewTypes } = require('../challenge-types');
+const { sortChallengeFiles } = require('../sort-challengefiles');
+const { viewTypes } = require('../../../shared/config/challenge-types');
 
 const backend = path.resolve(
   __dirname,
@@ -27,14 +26,29 @@ const superBlockIntro = path.resolve(
   __dirname,
   '../../src/templates/Introduction/super-block-intro.tsx'
 );
-const video = path.resolve(
+const quiz = path.resolve(
   __dirname,
-  '../../src/templates/Challenges/video/show.tsx'
+  '../../src/templates/Challenges/quiz/show.tsx'
 );
 
-const odin = path.resolve(
+const exam = path.resolve(
   __dirname,
-  '../../src/templates/Challenges/odin/show.tsx'
+  '../../src/templates/Challenges/exam/show.tsx'
+);
+
+const msTrophy = path.resolve(
+  __dirname,
+  '../../src/templates/Challenges/ms-trophy/show.tsx'
+);
+
+const fillInTheBlank = path.resolve(
+  __dirname,
+  '../../src/templates/Challenges/fill-in-the-blank/show.tsx'
+);
+
+const generic = path.resolve(
+  __dirname,
+  '../../src/templates/Challenges/generic/show.tsx'
 );
 
 const views = {
@@ -42,46 +56,45 @@ const views = {
   classic,
   modern: classic,
   frontend,
-  video,
+  quiz,
   codeAlly,
-  odin
-  // quiz: Quiz
+  exam,
+  msTrophy,
+  fillInTheBlank,
+  generic
 };
 
-function getIsFirstStep(_node, index, nodeArray) {
-  const current = nodeArray[index];
-  const previous = nodeArray[index - 1];
+function getIsFirstStepInBlock(id, edges) {
+  const current = edges[id];
+  const previous = edges[id - 1];
 
   if (!previous) return true;
   return previous.node.challenge.block !== current.node.challenge.block;
-}
-
-function getNextChallengePath(_node, index, nodeArray) {
-  const next = nodeArray[index + 1];
-  return next ? next.node.challenge.fields.slug : null;
-}
-
-function getPrevChallengePath(_node, index, nodeArray) {
-  const prev = nodeArray[index - 1];
-  return prev ? prev.node.challenge.fields.slug : null;
 }
 
 function getTemplateComponent(challengeType) {
   return views[viewTypes[challengeType]];
 }
 
-exports.createChallengePages = function (createPage) {
-  return function ({ node: { challenge } }, index, allChallengeEdges) {
+exports.createChallengePages = function (
+  createPage,
+  { idToNextPathCurrentCurriculum, idToPrevPathCurrentCurriculum }
+) {
+  return function ({ node }, index, allChallengeEdges) {
     const {
+      dashedName,
+      disableLoopProtectTests,
+      disableLoopProtectPreview,
       certification,
       superBlock,
       block,
-      fields: { slug },
+      fields: { slug, blockHashSlug },
       required = [],
       template,
       challengeType,
-      id
-    } = challenge;
+      id,
+      isLastChallengeInBlock
+    } = node.challenge;
     // TODO: challengeType === 7 and isPrivate are the same, right? If so, we
     // should remove one of them.
 
@@ -90,34 +103,36 @@ exports.createChallengePages = function (createPage) {
       component: getTemplateComponent(challengeType),
       context: {
         challengeMeta: {
+          blockHashSlug,
+          dashedName,
           certification,
+          disableLoopProtectTests,
+          disableLoopProtectPreview,
           superBlock,
           block,
-          isFirstStep: getIsFirstStep(challenge, index, allChallengeEdges),
+          isFirstStep: getIsFirstStepInBlock(index, allChallengeEdges),
           template,
           required,
-          nextChallengePath: getNextChallengePath(
-            challenge,
-            index,
-            allChallengeEdges
-          ),
-          prevChallengePath: getPrevChallengePath(
-            challenge,
-            index,
-            allChallengeEdges
-          ),
+          isLastChallengeInBlock: isLastChallengeInBlock,
+          nextChallengePath: idToNextPathCurrentCurriculum[node.id],
+          prevChallengePath: idToPrevPathCurrentCurriculum[node.id],
           id
         },
-        projectPreview: getProjectPreviewConfig(challenge, allChallengeEdges),
-        slug
+        projectPreview: getProjectPreviewConfig(
+          node.challenge,
+          allChallengeEdges
+        ),
+        id: node.id
       }
     });
   };
 };
 
+// TODO: figure out a cleaner way to get the last challenge in a block. Create
+// it during the curriculum build process and attach it to the first challenge?
+// That would remove the need to analyse allChallengeEdges.
 function getProjectPreviewConfig(challenge, allChallengeEdges) {
-  const { block, challengeOrder, challengeType, usesMultifileEditor } =
-    challenge;
+  const { block } = challenge;
 
   const challengesInBlock = allChallengeEdges
     .filter(({ node: { challenge } }) => challenge.block === block)
@@ -135,10 +150,6 @@ function getProjectPreviewConfig(challenge, allChallengeEdges) {
   }));
 
   return {
-    showProjectPreview:
-      challengeOrder === 0 &&
-      usesMultifileEditor &&
-      challengeType !== challengeTypes.multifileCertProject,
     challengeData: {
       challengeType: lastChallenge.challengeType,
       challengeFiles: projectPreviewChallengeFiles
@@ -150,15 +161,16 @@ exports.createBlockIntroPages = function (createPage) {
   return function (edge) {
     const {
       fields: { slug },
-      frontmatter: { block }
+      frontmatter: { block },
+      id
     } = edge.node;
 
     createPage({
       path: slug,
       component: intro,
       context: {
-        block: dasherize(block),
-        slug
+        block,
+        id
       }
     });
   };
@@ -168,7 +180,7 @@ exports.createSuperBlockIntroPages = function (createPage) {
   return function (edge) {
     const {
       fields: { slug },
-      frontmatter: { superBlock, certification }
+      frontmatter: { superBlock, certification, title }
     } = edge.node;
 
     if (!certification) {
@@ -186,7 +198,7 @@ exports.createSuperBlockIntroPages = function (createPage) {
       context: {
         certification,
         superBlock,
-        slug
+        title
       }
     });
   };

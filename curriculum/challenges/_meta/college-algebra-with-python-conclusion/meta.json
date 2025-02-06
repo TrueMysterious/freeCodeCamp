@@ -4,18 +4,16 @@
   "dashedName": "college-algebra-with-python-conclusion",
   "helpCategory": "Python",
   "order": 18,
-  "time": "",
-  "template": "",
-  "required": [],
   "superBlock": "college-algebra-with-python",
   "challengeOrder": [
-    [
-      "6363d2899078df117ce4c407",
-      "Spreadsheets and Additional Resources"
-    ],
-    [
-      "6363d2959078df117ce4c408",
-      "More Resources in Colab"
-    ]
-  ]
+    {
+      "id": "6363d2899078df117ce4c407",
+      "title": "Spreadsheets and Additional Resources"
+    },
+    {
+      "id": "6363d2959078df117ce4c408",
+      "title": "More Resources in Colab"
+    }
+  ],
+  "blockLayout": "legacy-challenge-list"
 }

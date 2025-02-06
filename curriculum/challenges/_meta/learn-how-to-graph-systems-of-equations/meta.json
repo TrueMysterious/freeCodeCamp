@@ -4,18 +4,16 @@
   "dashedName": "learn-how-to-graph-systems-of-equations",
   "helpCategory": "Python",
   "order": 7,
-  "time": "",
-  "template": "",
-  "required": [],
   "superBlock": "college-algebra-with-python",
   "challengeOrder": [
-    [
-      "6331d27db51aeedd1a2bd64e",
-      "Graphing Systems"
-    ],
-    [
-      "6331d276b51aeedd1a2bd64d",
-      "Graphing Systems of Equations: Extra"
-    ]
-  ]
+    {
+      "id": "6331d27db51aeedd1a2bd64e",
+      "title": "Graphing Systems"
+    },
+    {
+      "id": "6331d276b51aeedd1a2bd64d",
+      "title": "Graphing Systems of Equations: Extra"
+    }
+  ],
+  "blockLayout": "legacy-challenge-list"
 }

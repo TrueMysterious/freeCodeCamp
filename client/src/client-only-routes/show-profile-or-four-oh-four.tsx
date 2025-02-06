@@ -1,22 +1,31 @@
 import { isEmpty } from 'lodash-es';
-import React, { useEffect, Suspense, lazy } from 'react';
+import React, { useEffect } from 'react';
 import { connect } from 'react-redux';
 
 import { isBrowser } from '../../utils/index';
+import FourOhFour from '../components/FourOhFour';
 import Loader from '../components/helpers/loader';
 import Profile from '../components/profile/profile';
 import { fetchProfileForUser } from '../redux/actions';
+
+import {
+  submitNewAbout,
+  updateMyPortfolio,
+  updateMySocials
+} from '../redux/settings/actions';
 import {
   usernameSelector,
   userByNameSelector,
   userProfileFetchStateSelector
 } from '../redux/selectors';
 import { User } from '../redux/prop-types';
-
-const FourOhFour = lazy(() => import('../components/FourOhFour'));
+import { Socials } from '../components/profile/components/internet';
 
 interface ShowProfileOrFourOhFourProps {
   fetchProfileForUser: (username: string) => void;
+  updateMyPortfolio: () => void;
+  submitNewAbout: () => void;
+  updateMySocials: (formValues: Socials) => void;
   fetchState: {
     pending: boolean;
     complete: boolean;
@@ -25,6 +34,7 @@ interface ShowProfileOrFourOhFourProps {
   isSessionUser: boolean;
   maybeUser?: string;
   requestedUser: User;
+  showLoading: boolean;
 }
 
 const createRequestedUserSelector =
@@ -46,21 +56,32 @@ const makeMapStateToProps =
     return {
       requestedUser: requestedUserSelector(state, props),
       isSessionUser: isSessionUserSelector(state, props),
+      showLoading: fetchState.pending,
       fetchState
     };
   };
 
 const mapDispatchToProps: {
   fetchProfileForUser: ShowProfileOrFourOhFourProps['fetchProfileForUser'];
+  submitNewAbout: () => void;
+  updateMyPortfolio: () => void;
+  updateMySocials: (formValues: Socials) => void;
 } = {
-  fetchProfileForUser
+  fetchProfileForUser,
+  submitNewAbout,
+  updateMyPortfolio,
+  updateMySocials
 };
 
 function ShowProfileOrFourOhFour({
   requestedUser,
   maybeUser,
   fetchProfileForUser,
-  isSessionUser
+  submitNewAbout,
+  updateMyPortfolio,
+  updateMySocials,
+  isSessionUser,
+  showLoading
 }: ShowProfileOrFourOhFourProps) {
   useEffect(() => {
     // If the user is not already in the store, fetch it
@@ -77,13 +98,19 @@ function ShowProfileOrFourOhFour({
   }
 
   return isEmpty(requestedUser) ? (
-    <Suspense fallback={<Loader fullScreen={true} />}>
+    showLoading ? (
+      <Loader fullScreen={true} />
+    ) : (
       <FourOhFour />
-    </Suspense>
+    )
   ) : (
-    <Suspense fallback={<Loader fullScreen={true} />}>
-      <Profile isSessionUser={isSessionUser} user={requestedUser} />
-    </Suspense>
+    <Profile
+      isSessionUser={isSessionUser}
+      user={requestedUser}
+      submitNewAbout={submitNewAbout}
+      updateMyPortfolio={updateMyPortfolio}
+      updateMySocials={updateMySocials}
+    />
   );
 }
 

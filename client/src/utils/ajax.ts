@@ -1,16 +1,20 @@
 import cookies from 'browser-cookies';
-import envData from '../../../config/env.json';
+import envData from '../../config/env.json';
 
 import type {
   ChallengeFile,
   ChallengeFiles,
   CompletedChallenge,
+  ExamTokenResponse,
+  GenerateExamResponseWithData,
   SavedChallenge,
   SavedChallengeFile,
+  SurveyResults,
   User
 } from '../redux/prop-types';
+import { DonationDuration } from '../../../shared/config/donation-settings';
 
-const { apiLocation, gitHash } = envData;
+const { apiLocation } = envData;
 
 const base = apiLocation;
 
@@ -34,7 +38,10 @@ export interface ResponseWithData<T> {
 // TODO: Might want to handle flash messages as close to the request as possible
 // to make use of the Response object (message, status, etc)
 async function get<T>(path: string): Promise<ResponseWithData<T>> {
-  const response = await fetch(`${base}${path}`, defaultOptions);
+  const response = await fetch(`${base}${path}`, {
+    ...defaultOptions,
+    headers: { 'CSRF-Token': getCSRFToken() }
+  });
 
   return combineDataWithResponse(response);
 }
@@ -88,7 +95,6 @@ async function request<T>(
 
 interface SessionUser {
   user?: { [username: string]: User };
-  sessionMeta: { activeDonations: number };
 }
 
 type CompleteChallengeFromApi = {
@@ -163,7 +169,6 @@ export function getSessionUser(): Promise<ResponseWithData<SessionUser>> {
     return {
       response,
       data: {
-        sessionMeta: data.sessionMeta,
         result,
         user
       }
@@ -179,7 +184,7 @@ export function getUserProfile(
   username: string
 ): Promise<ResponseWithData<UserProfileResponse>> {
   const responseWithData = get<{ entities?: ApiUser; result?: string }>(
-    `/api/users/get-public-profile?username=${username}&githash=${gitHash}`
+    `/api/users/get-public-profile?username=${username}`
   );
   return responseWithData.then(({ response, data }) => {
     const { result, user } = parseApiResponseToClientUser({
@@ -215,6 +220,12 @@ export function getUsernameExists(
   return get(`/api/users/exists?username=${username}`);
 }
 
+export function getGenerateExam(
+  challengeId: string
+): Promise<GenerateExamResponseWithData> {
+  return get(`/exam/${challengeId}`);
+}
+
 /** POST **/
 
 interface Donation {
@@ -232,6 +243,10 @@ export function addDonation(body: Donation): Promise<ResponseWithData<void>> {
   return post('/donate/add-donation', body);
 }
 
+export function updateStripeCard() {
+  return put('/donate/update-stripe-card', {});
+}
+
 export function postChargeStripe(
   body: Donation
 ): Promise<ResponseWithData<void>> {
@@ -243,6 +258,37 @@ export function postChargeStripeCard(
 ): Promise<ResponseWithData<void>> {
   return post('/donate/charge-stripe-card', body);
 }
+
+export function generateExamToken(): Promise<
+  ResponseWithData<ExamTokenResponse>
+> {
+  return post('/user/exam-environment/token', {});
+}
+
+type PaymentIntentResponse = Promise<
+  ResponseWithData<
+    | {
+        clientSecret?: never;
+        subscriptionId?: never;
+        error: string;
+      }
+    | {
+        clientSecret: string;
+        subscriptionId: string;
+        error?: never;
+      }
+  >
+>;
+
+export function createStripePaymentIntent(body: {
+  email: string | undefined;
+  name: string | undefined;
+  amount: number;
+  duration: DonationDuration;
+}): PaymentIntentResponse {
+  return post('/donate/create-stripe-payment-intent', body);
+}
+
 interface Report {
   username: string;
   reportDescription: string;
@@ -266,11 +312,23 @@ export function postUserToken(): Promise<ResponseWithData<void>> {
   return post('/user/user-token', {});
 }
 
+export function postMsUsername(body: {
+  msTranscriptUrl: string;
+}): Promise<ResponseWithData<void>> {
+  return post('/user/ms-username', body);
+}
+
 export function postSaveChallenge(body: {
   id: string;
   files: ChallengeFiles;
 }): Promise<ResponseWithData<void>> {
   return post('/save-challenge', body);
+}
+
+export function postSubmitSurvey(body: {
+  surveyResults: SurveyResults;
+}): Promise<ResponseWithData<void>> {
+  return post('/user/submit-survey', body);
 }
 
 /** PUT **/
@@ -303,18 +361,6 @@ export function putUpdateMySocials(
   update: Record<string, string>
 ): Promise<ResponseWithData<void>> {
   return put('/update-my-socials', update);
-}
-
-export function putUpdateMySound(
-  update: Record<string, string>
-): Promise<ResponseWithData<void>> {
-  return put('/update-my-sound', update);
-}
-
-export function putUpdateMyTheme(
-  update: Record<string, string>
-): Promise<ResponseWithData<void>> {
-  return put('/update-my-theme', update);
 }
 
 export function putUpdateMyKeyboardShortcuts(
@@ -362,4 +408,8 @@ export function putVerifyCert(
 /** DELETE **/
 export function deleteUserToken(): Promise<ResponseWithData<void>> {
   return deleteRequest('/user/user-token', {});
+}
+
+export function deleteMsUsername(): Promise<ResponseWithData<void>> {
+  return deleteRequest('/user/ms-username', {});
 }

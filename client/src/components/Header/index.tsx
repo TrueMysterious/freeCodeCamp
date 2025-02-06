@@ -3,25 +3,43 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/unbound-method */
 import React from 'react';
-import { User } from '../../redux/prop-types';
+import { ConnectedProps, connect } from 'react-redux';
+import { createSelector } from 'reselect';
+import { examInProgressSelector } from '../../redux/selectors';
 
 import UniversalNav from './components/universal-nav';
+import ExamNav from './components/exam-nav';
 
 import './header.css';
 
-interface HeaderProps {
+const mapStateToProps = createSelector(
+  examInProgressSelector,
+  (examInProgress: boolean) => ({
+    examInProgress
+  })
+);
+
+const connector = connect(mapStateToProps);
+
+type PropsFromRedux = ConnectedProps<typeof connector>;
+
+type Props = PropsFromRedux & {
   fetchState: { pending: boolean };
-  user: User;
+  user: {
+    isDonating: boolean;
+    username: string;
+    picture: string;
+    yearsTopContributor: string[];
+  };
   skipButtonText: string;
-}
-export class Header extends React.Component<
-  HeaderProps,
-  { displayMenu: boolean }
-> {
+  pathname: string;
+};
+
+class Header extends React.Component<Props, { displayMenu: boolean }> {
   menuButtonRef: React.RefObject<HTMLButtonElement>;
   searchBarRef: React.RefObject<any>;
   static displayName: string;
-  constructor(props: HeaderProps) {
+  constructor(props: Props) {
     super(props);
     this.state = {
       displayMenu: false
@@ -66,21 +84,31 @@ export class Header extends React.Component<
 
   render(): JSX.Element {
     const { displayMenu } = this.state;
-    const { fetchState, user, skipButtonText } = this.props;
+    const { examInProgress, fetchState, user, skipButtonText, pathname } =
+      this.props;
     return (
-      <header>
-        <a href='#content-start' className='skip-to-content-button'>
+      <header className='site-header'>
+        <a
+          href='#content-start'
+          className='skip-to-content-button'
+          data-playwright-test-label='header-skip-content'
+        >
           {skipButtonText}
         </a>
-        <UniversalNav
-          displayMenu={displayMenu}
-          fetchState={fetchState}
-          hideMenu={this.hideMenu}
-          menuButtonRef={this.menuButtonRef}
-          searchBarRef={this.searchBarRef}
-          showMenu={this.showMenu}
-          user={user}
-        />
+        {examInProgress ? (
+          <ExamNav />
+        ) : (
+          <UniversalNav
+            displayMenu={displayMenu}
+            fetchState={fetchState}
+            hideMenu={this.hideMenu}
+            pathname={pathname}
+            menuButtonRef={this.menuButtonRef}
+            searchBarRef={this.searchBarRef}
+            showMenu={this.showMenu}
+            user={user}
+          />
+        )}
       </header>
     );
   }
@@ -88,4 +116,4 @@ export class Header extends React.Component<
 
 Header.displayName = 'Header';
 
-export default Header;
+export default connector(Header);

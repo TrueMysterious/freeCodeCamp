@@ -1,8 +1,7 @@
-import { Form } from '@freecodecamp/react-bootstrap';
 import React, { ChangeEvent, useState, useRef } from 'react';
 import store from 'store';
 import { useTranslation } from 'react-i18next';
-import { Spacer } from '../helpers';
+import { Spacer } from '@freecodecamp/ui';
 import { getScrollbarWidth } from '../../utils/scrollbar-width';
 import './scrollbar-width.css';
 
@@ -35,7 +34,7 @@ export default function ScrollbarWidthSettings(): JSX.Element {
   /* eslint-disable jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */
 
   return (
-    <Form inline={true} onSubmit={(e: React.FormEvent) => e.preventDefault()}>
+    <>
       <label htmlFor='scrollbar-width-slider'>
         {t('settings.scrollbar-width')}:
         <span
@@ -79,8 +78,8 @@ export default function ScrollbarWidthSettings(): JSX.Element {
           ))}
         </div>
       </div>
-      <Spacer size='medium'></Spacer>
-    </Form>
+      <Spacer size='m' />
+    </>
   );
 }
 

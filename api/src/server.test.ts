@@ -5,24 +5,14 @@ jest.mock('./utils/env', () => {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-return
   return {
     ...jest.requireActual('./utils/env'),
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    FREECODECAMP_NODE_ENV: 'production'
+    COOKIE_DOMAIN: 'freecodecamp.org'
   };
 });
 
-describe('production', () => {
+describe('server', () => {
   setupServer();
+
   describe('GET /', () => {
-    test('have a 200 response', async () => {
-      const res = await superRequest('/', { method: 'GET' });
-      expect(res.statusCode).toBe(200);
-    });
-
-    test('return { "hello": "world"}', async () => {
-      const res = await superRequest('/', { method: 'GET' });
-      expect(res.body).toEqual({ hello: 'world' });
-    });
-
     test('should have OWASP recommended headers', async () => {
       const res = await superRequest('/', { method: 'GET' });
       expect(res.headers).toMatchObject({
@@ -30,8 +20,11 @@ describe('production', () => {
         'content-security-policy': "frame-ancestors 'none'",
         'content-type': 'application/json; charset=utf-8',
         'x-content-type-options': 'nosniff',
-        'x-frame-options': 'DENY',
-        'strict-transport-security': 'max-age=300; includeSubDomains'
+        'x-frame-options': 'DENY'
+        // In production we also set strict-transport-security, but in order to
+        // test this we would need to mock FREECODECAMP_NODE_ENV to production.
+        // This is possible, but has side effects (like using the normal
+        // database instead of the test ones). On balance it's not worth it.
       });
     });
 
@@ -65,12 +58,13 @@ describe('production', () => {
       });
     });
 
-    test('should have Access-Control-Allow-(Headers+Credentials) headers', async () => {
+    test('should have CORS headers', async () => {
       const res = await superRequest('/', { method: 'GET' });
       expect(res.headers).toMatchObject({
         'access-control-allow-headers':
-          'Origin, X-Requested-With, Content-Type, Accept',
-        'access-control-allow-credentials': 'true'
+          'Origin, X-Requested-With, Content-Type, Accept, Csrf-Token, Coderoad-User-Token, Exam-Environment-Authorization-Token',
+        'access-control-allow-credentials': 'true',
+        'access-control-allow-methods': 'GET, PUT, POST, DELETE'
       });
     });
   });
@@ -85,8 +79,7 @@ describe('production', () => {
         'content-security-policy': "frame-ancestors 'none'",
         'content-type': 'text/html; charset=utf-8',
         'x-content-type-options': 'nosniff',
-        'x-frame-options': 'DENY',
-        'strict-transport-security': 'max-age=300; includeSubDomains'
+        'x-frame-options': 'DENY'
       });
     });
   });

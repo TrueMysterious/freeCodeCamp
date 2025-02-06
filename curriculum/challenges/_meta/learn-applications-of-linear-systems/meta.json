@@ -4,18 +4,16 @@
   "dashedName": "learn-applications-of-linear-systems",
   "helpCategory": "Python",
   "order": 9,
-  "time": "",
-  "template": "",
-  "required": [],
   "superBlock": "college-algebra-with-python",
   "challengeOrder": [
-    [
-      "6363d2019078df117ce4c3fe",
-      "Word Problems"
-    ],
-    [
-      "6363d23a9078df117ce4c3ff",
-      "Applications of Linear Systems: Extra"
-    ]
-  ]
+    {
+      "id": "6363d2019078df117ce4c3fe",
+      "title": "Word Problems"
+    },
+    {
+      "id": "6363d23a9078df117ce4c3ff",
+      "title": "Applications of Linear Systems: Extra"
+    }
+  ],
+  "blockLayout": "legacy-challenge-list"
 }

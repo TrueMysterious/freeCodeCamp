@@ -4,18 +4,16 @@
   "dashedName": "learn-business-applications-of-college-algebra",
   "helpCategory": "Python",
   "order": 14,
-  "time": "",
-  "template": "",
-  "required": [],
   "superBlock": "college-algebra-with-python",
   "challengeOrder": [
-    [
-      "6363d2649078df117ce4c404",
-      "Demand and Revenue"
-    ],
-    [
-      "63dbd0375d93712ff177d969",
-      "Business Applications of College Algebra: Extra"
-    ]
-  ]
+    {
+      "id": "6363d2649078df117ce4c404",
+      "title": "Demand and Revenue"
+    },
+    {
+      "id": "63dbd0375d93712ff177d969",
+      "title": "Business Applications of College Algebra: Extra"
+    }
+  ],
+  "blockLayout": "legacy-challenge-list"
 }

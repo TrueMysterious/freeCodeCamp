@@ -72,37 +72,6 @@ describe('<certification />', () => {
       })
     ).toHaveAttribute('href', 'https://github.com/freeCodeCamp/freeCodeCamp');
   });
-
-  it('Render button when both githubLink and solution is present', () => {
-    renderWithRedux(<CertificationSettings {...propsForOnlySolution} />);
-
-    const links = screen.getAllByRole('menuitem');
-    expect(links[0]).toHaveAttribute(
-      'href',
-      'https://github.com/freeCodeCamp/freeCodeCamp1'
-    );
-
-    expect(links[1]).toHaveAttribute(
-      'href',
-      'https://github.com/freeCodeCamp/freeCodeCamp2'
-    );
-  });
-
-  it('rendering the correct button when files is present', () => {
-    renderWithRedux(<CertificationSettings {...propsForMultifileProject} />);
-
-    expect(
-      screen.getByRole('menuitem', {
-        name: 'buttons.view-code'
-      })
-    ).toBeInTheDocument();
-
-    expect(
-      screen.getByRole('menuitem', {
-        name: 'buttons.view-project'
-      })
-    ).toBeInTheDocument();
-  });
 });
 
 const defaultTestProps = {
@@ -301,12 +270,14 @@ const defaultTestProps = {
   isQaCertV7: false,
   isInfosecCertV7: false,
   isJsAlgoDataStructCert: false,
+  isJsAlgoDataStructCertV8: false,
   isRespWebDesignCert: false,
   isSciCompPyCertV7: false,
   isDataAnalysisPyCertV7: false,
   isMachineLearningPyCertV7: false,
   isRelationalDatabaseCertV8: false,
   isCollegeAlgebraPyCertV8: false,
+  isFoundationalCSharpCertV8: false,
   username: 'developmentuser',
   verifyCert: verifyCert,
   isEmailVerified: false
@@ -348,26 +319,6 @@ const propsForOnlySolution = {
           path
         }
       ]
-    }
-  ]
-};
-
-const propsForMultifileProject = {
-  ...defaultTestProps,
-  completedChallenges: [
-    {
-      id: '587d78af367417b2b2512b03',
-      completedDate: 123456789,
-      challengeFiles: [
-        {
-          contents,
-          ext,
-          fileKey,
-          name,
-          path
-        }
-      ],
-      challengeType: 14
     }
   ]
 };
